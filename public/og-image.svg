@@ -1,0 +1,100 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0400;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a0800;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d0f00;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Animated blobs background -->
+  <circle cx="100" cy="80" r="150" fill="#f59e0b" opacity="0.08" filter="url(#glow)"/>
+  <circle cx="1100" cy="550" r="200" fill="#d97706" opacity="0.08" filter="url(#glow)"/>
+  <circle cx="600" cy="150" r="100" fill="#fbbf24" opacity="0.05"/>
+
+  <!-- Left decorative card -->
+  <rect x="40" y="120" width="240" height="390" rx="25" fill="#ffffff" opacity="0.05" stroke="#f59e0b" stroke-width="2"/>
+
+  <!-- Key icon with shadow -->
+  <g filter="url(#glow)">
+    <g transform="translate(160, 280)">
+      <!-- Key circle head -->
+      <circle cx="0" cy="0" r="55" fill="url(#amberGrad)"/>
+
+      <!-- Key shaft -->
+      <rect x="30" y="-18" width="90" height="36" rx="18" fill="url(#amberGrad)"/>
+
+      <!-- Key teeth -->
+      <rect x="110" y="-12" width="18" height="12" fill="url(#amberGrad)"/>
+      <rect x="135" y="-12" width="18" height="12" fill="url(#amberGrad)"/>
+
+      <!-- Key hole -->
+      <circle cx="0" cy="0" r="18" fill="#0a0400" opacity="0.8"/>
+      <circle cx="0" cy="0" r="12" fill="#0a0400"/>
+    </g>
+  </g>
+
+  <!-- Shine effect on key -->
+  <ellipse cx="130" cy="240" rx="25" ry="35" fill="white" opacity="0.15"/>
+
+  <!-- Main heading -->
+  <text x="370" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="88" font-weight="900" fill="white" letter-spacing="-2">
+    Chaveiro Pro
+  </text>
+
+  <!-- Subtitle with accent -->
+  <rect x="370" y="200" width="8" height="50" rx="4" fill="url(#accentGrad)"/>
+  <text x="395" y="240" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="600" fill="#fbbf24" letter-spacing="0.5">
+    Gestão Completa
+  </text>
+
+  <!-- Features -->
+  <g>
+    <!-- Feature 1 -->
+    <circle cx="370" cy="310" r="8" fill="#f59e0b"/>
+    <text x="400" y="320" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#ffffff" font-weight="500">
+      Controle de Estoque
+    </text>
+
+    <!-- Feature 2 -->
+    <circle cx="370" cy="380" r="8" fill="#f59e0b"/>
+    <text x="400" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#ffffff" font-weight="500">
+      Gestão de Vendas
+    </text>
+
+    <!-- Feature 3 -->
+    <circle cx="370" cy="450" r="8" fill="#f59e0b"/>
+    <text x="400" y="460" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#ffffff" font-weight="500">
+      Segurança Garantida
+    </text>
+  </g>
+
+  <!-- CTA Button -->
+  <g filter="url(#glow)">
+    <rect x="370" y="510" width="760" height="90" rx="20" fill="url(#accentGrad)" stroke="#fbbf24" stroke-width="3"/>
+    <text x="750" y="570" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" fill="#0a0400" text-anchor="middle">
+      15 Dias Grátis • Sem Cartão de Crédito 🔑
+    </text>
+  </g>
+
+  <!-- Footer accent line -->
+  <line x1="370" y1="630" x2="1130" y2="630" stroke="#f59e0b" stroke-width="3" opacity="0.6"/>
+</svg>
