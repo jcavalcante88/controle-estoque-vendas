@@ -35,7 +35,7 @@ function initLoginLimiter() {
       redis,
       limiter: Ratelimit.slidingWindow(5, "15 m"),
       analytics: true,
-      prefix: "ratelimit:login",
+      prefix: "estoque:ratelimit:login",
     });
 
     console.log("✅ Rate limiting ATIVADO - Login");
@@ -69,7 +69,7 @@ function initRegisterLimiter() {
       redis,
       limiter: Ratelimit.slidingWindow(10, "1 h"),
       analytics: true,
-      prefix: "ratelimit:register",
+      prefix: "estoque:ratelimit:register",
     });
 
     console.log("✅ Rate limiting ATIVADO - Register");
@@ -103,7 +103,7 @@ function initPasswordResetLimiter() {
       redis,
       limiter: Ratelimit.slidingWindow(3, "30 m"),
       analytics: true,
-      prefix: "ratelimit:password-reset",
+      prefix: "estoque:ratelimit:password-reset",
     });
 
     console.log("✅ Rate limiting ATIVADO - Password Reset");
