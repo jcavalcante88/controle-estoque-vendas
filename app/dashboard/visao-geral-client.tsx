@@ -17,7 +17,7 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
   const cards = [
     { label: 'Produtos', value: String(totalProdutos), icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
     { label: 'Valor em estoque', value: fmt(valorEstoque), icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
-    { label: 'Vendas hoje', value: fmt(vendasHoje), icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+    { label: 'Vendas hoje', value: fmt(vendasHoje), icon: TrendingUp, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
     { label: 'Vendas este mês', value: fmt(vendasMes), icon: TrendingUp, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
   ];
 
@@ -29,9 +29,9 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
       </div>
 
       {statusAssinatura?.status === 'trialing' && statusAssinatura.diasRestantesTrial !== null && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Clock size={20} className="text-amber-400" />
+            <Clock size={20} className="text-emerald-400" />
             <div>
               <p className="text-white font-medium">
                 {statusAssinatura.diasRestantesTrial} {statusAssinatura.diasRestantesTrial === 1 ? 'dia' : 'dias'} de trial restantes
@@ -42,7 +42,7 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
           <form method="POST" action="/api/stripe/checkout">
             <button
               type="submit"
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-semibold"
+              className="px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 rounded-lg hover:from-emerald-300 hover:to-cyan-400 transition text-sm font-bold"
             >
               Assinar agora
             </button>
@@ -87,7 +87,7 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
         <div className="glass-card p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-white">Vendas Recentes</h2>
-            <Link href="/dashboard/vendas" className="text-xs text-amber-400 hover:text-amber-300">Ver tudo →</Link>
+            <Link href="/dashboard/vendas" className="text-xs text-emerald-400 hover:text-emerald-300">Ver tudo →</Link>
           </div>
           {vendasRecentes.length === 0 ? (
             <p className="text-sm text-white/30 text-center py-6">Nenhuma venda registrada ainda</p>

@@ -41,10 +41,10 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-500/20 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/20 rounded-full mb-4">
             <span className="text-2xl">🔑</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Chaveiro Pro</h1>
+          <h1 className="text-2xl font-bold text-white">Estoque &amp; Vendas</h1>
           <p className="text-slate-400 mt-1">Recuperar Acesso</p>
         </div>
 
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       required
-                      className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
+                      className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
                     />
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-white font-medium rounded-lg transition"
+                  className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white font-medium rounded-lg transition"
                 >
                   {loading ? "Enviando..." : "Enviar Link de Recuperação"}
                 </button>
@@ -124,7 +124,7 @@ export default function ForgotPasswordPage() {
 
                 <Link
                   href="/login"
-                  className="flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 rounded-lg transition"
+                  className="flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-2 rounded-lg transition"
                 >
                   Voltar para Login
                 </Link>
@@ -135,7 +135,7 @@ export default function ForgotPasswordPage() {
 
         {/* Footer */}
         <p className="text-center text-slate-500 text-xs mt-4">
-          © 2026 Chaveiro Pro. Todos os direitos reservados.
+          © 2026 Estoque &amp; Vendas. Todos os direitos reservados.
         </p>
       </div>
     </div>

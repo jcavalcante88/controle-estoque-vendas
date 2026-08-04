@@ -1,4 +1,4 @@
-// Banco de dados do Chaveiro Pro SaaS
+// Banco de dados do Controle Estoque & Vendas (SaaS)
 // Usa Postgres (recomendado: Supabase, plano free)
 
 generator client {

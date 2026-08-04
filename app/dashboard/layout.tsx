@@ -15,7 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0f0500] relative">
+    <div className="flex min-h-screen bg-[#070d14] relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="blob blob-1" style={{ opacity: 0.12 }} />
         <div className="blob blob-2" style={{ opacity: 0.08 }} />

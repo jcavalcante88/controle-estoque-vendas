@@ -58,7 +58,7 @@ export function ProdutosClient() {
           <h1 className="text-3xl font-bold text-white mb-1">Produtos</h1>
           <p className="text-sm text-white/40">Gerencie seu catálogo</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-500/20">
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-gray-900 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-500/20">
           <Plus size={18} /> Novo Produto
         </button>
       </div>
@@ -95,7 +95,7 @@ export function ProdutosClient() {
               return (
                 <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
                   <td className="px-5 py-4 font-medium text-white max-w-xs truncate">{p.nome}</td>
-                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full whitespace-nowrap">{p.categoria}</span></td>
+                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full whitespace-nowrap">{p.categoria}</span></td>
                   <td className="px-5 py-4 text-white/70">{fmt(p.custo)}</td>
                   <td className="px-5 py-4 text-white/70">{fmt(p.preco)}</td>
                   <td className="px-5 py-4 text-white/70">{margem}%</td>
@@ -127,7 +127,7 @@ export function ProdutosClient() {
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white truncate">{p.nome}</p>
-                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
+                    <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={16} className="text-blue-400" /></button>
@@ -146,7 +146,7 @@ export function ProdutosClient() {
                   </div>
                   <div>
                     <p className="text-xs text-white/40 mb-1">Margem</p>
-                    <p className="text-sm font-medium text-amber-400">{margem}%</p>
+                    <p className="text-sm font-medium text-emerald-400">{margem}%</p>
                   </div>
                   <div>
                     <p className="text-xs text-white/40 mb-1">Estoque</p>
@@ -186,7 +186,7 @@ export function ProdutosClient() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-white/60 hover:bg-white/5 transition text-sm">Cancelar</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-xl hover:from-amber-300 hover:to-amber-400 transition text-sm">Salvar</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold rounded-xl hover:from-emerald-300 hover:to-cyan-400 transition text-sm">Salvar</button>
             </div>
           </div>
         </div>

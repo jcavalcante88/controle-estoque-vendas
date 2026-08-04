@@ -48,7 +48,7 @@ export function RelatoriosClient() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Vendas no período', value: String(data.resumo.totalVendas), icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+          { label: 'Vendas no período', value: String(data.resumo.totalVendas), icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
           { label: 'Receita total', value: fmt(data.resumo.receitaTotal), icon: BarChart3, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
           { label: 'Ticket médio', value: fmt(data.resumo.ticketMedio), icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
@@ -76,7 +76,7 @@ export function RelatoriosClient() {
                     <span className="font-medium text-white">{fmt(d.total)} <span className="text-white/40 font-normal">({d.qtd})</span></span>
                   </div>
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all" style={{ width: `${Math.round((d.total / maxVenda) * 100)}%` }} />
+                    <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full transition-all" style={{ width: `${Math.round((d.total / maxVenda) * 100)}%` }} />
                   </div>
                 </div>
               ))}

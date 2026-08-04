@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Key, Menu, X, Settings, Lightbulb } from 'lucide-react';
+import { LayoutDashboard, Package, Boxes, ShoppingCart, BarChart3, LogOut, Store, Menu, X, Settings, Lightbulb } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard, exact: true },
@@ -24,19 +24,19 @@ function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => 
     <>
       <div className="px-5 py-4 border-b border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <Key size={16} className="text-white" />
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/30">
+            <Store size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white leading-none">Chaveiro Pro</p>
-            <p className="text-xs text-white/40 mt-0.5">Gestão</p>
+            <p className="text-sm font-bold text-white leading-none">Estoque &amp; Vendas</p>
+            <p className="text-xs text-white/40 mt-0.5">Controle do seu negócio</p>
           </div>
         </div>
       </div>
 
       {trialInfo && (
-        <div className="mx-3 mt-3 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-          <p className="text-xs text-amber-400 font-medium">{trialInfo}</p>
+        <div className="mx-3 mt-3 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+          <p className="text-xs text-emerald-400 font-medium">{trialInfo}</p>
         </div>
       )}
 
@@ -50,9 +50,9 @@ function NavContent({ userName, trialInfo, onClose }: Props & { onClose?: () => 
               onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 special
-                  ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-300 border border-amber-500/30 hover:from-amber-500/30 hover:to-amber-600/30'
+                  ? 'bg-gradient-to-r from-emerald-500/20 to-cyan-600/20 text-emerald-300 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-cyan-600/30'
                   : active
-                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25 shadow-sm'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 shadow-sm'
                   : 'text-white/50 hover:bg-white/5 hover:text-white/80'
               }`}
             >
@@ -94,7 +94,7 @@ export function DashboardSidebar({ userName, trialInfo }: Props) {
       )}
 
       {/* Mobile drawer */}
-      <aside className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-[#0f0500]/90 backdrop-blur-xl border-r border-white/10 flex flex-col z-50 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`lg:hidden fixed top-0 left-0 h-full w-64 bg-[#070d14]/90 backdrop-blur-xl border-r border-white/10 flex flex-col z-50 transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <button onClick={() => setOpen(false)} className="absolute top-3 right-3 p-1.5 hover:bg-white/10 rounded-lg">
           <X size={18} className="text-white/50" />
         </button>

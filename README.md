@@ -2,7 +2,9 @@
 
 Sistema **SaaS multi-cliente** de gestão de estoque e vendas para **qualquer tipo de comércio** — lojas, distribuidoras, oficinas, papelarias, autopeças e afins. Controle de produtos com margem, vendas com baixa automática de estoque, relatórios, login seguro e cobrança recorrente por assinatura.
 
-> 🚧 **Projeto em adaptação.** Nasceu a partir do código do [Chaveiro Pro](https://github.com/jcavalcante88/chaveiro-saas) e está sendo generalizado para atender qualquer segmento de varejo.
+🔗 **No ar:** https://controle-estoque-vendas.vercel.app
+
+> Nasceu a partir do código do [Chaveiro Pro](https://github.com/jcavalcante88/chaveiro-saas) e foi generalizado para atender qualquer segmento de varejo, com marca, identidade visual e infraestrutura próprias.
 
 ---
 
@@ -45,15 +47,15 @@ npx prisma db push
 npm run dev     # http://localhost:3000
 ```
 
-> ⚠️ **Importante:** este projeto precisa do **próprio banco de dados e das próprias chaves**. Não reutilize as do Chaveiro Pro — senão os dados dos dois sistemas se misturam.
+> ⚠️ **Importante:** este projeto usa **banco de dados e chaves próprios** — veja `.env.example`. A única infraestrutura compartilhada com o Chaveiro Pro é o Redis do Upstash (limite do plano gratuito), e mesmo assim as chaves ficam isoladas pelo prefixo `estoque:` definido em `lib/ratelimit.ts`.
 
-## 📋 Roteiro de adaptação (o que falta generalizar)
+## 📋 Estado da adaptação
 
-- [ ] Trocar textos e marca de "Chaveiro Pro" para o nome deste sistema
-- [ ] Revisar categorias de produtos (hoje voltadas a fechaduras/chaves)
-- [ ] Ajustar a página inicial (copy de vendas para público geral)
-- [ ] Criar banco de dados novo e configurar o `.env`
-- [ ] Configurar produto/preço próprios no Stripe
+- [x] Marca, identidade visual e textos próprios
+- [x] Banco de dados próprio (Neon) e `.env` configurado
+- [x] Produto/preço próprios no Stripe (modo teste)
+- [x] Deploy em produção com OAuth, webhook e rate limiting ativos
+- [ ] Migrar o Stripe para modo real (live) quando for cobrar de verdade
 
 ---
 

@@ -1,4 +1,4 @@
-# Chaveiro Pro — versão SaaS (com login, trial de 15 dias e cobrança no cartão)
+# Controle Estoque & Vendas — versão SaaS (com login, trial de 15 dias e cobrança no cartão)
 
 Este projeto adiciona ao seu sistema demo:
 - Cadastro/login com **Google** e **GitHub**
@@ -51,7 +51,7 @@ sistema de pagamento do mundo — Stripe não cobra mensalidade nem taxa de conf
 1. Crie conta em https://dashboard.stripe.com/register
 2. Fique no **modo de teste** primeiro (chave começando com `sk_test_`) — só ative o modo real depois de testar tudo
 3. **Product catalog → Add product**:
-   - Nome: "Chaveiro Pro — Plano Mensal"
+   - Nome: "Controle Estoque & Vendas — Plano Mensal"
    - Preço: defina o valor mensal → tipo "Recurring" (recorrente) → mensal
    - Copie o **Price ID** (começa com `price_...`) → cole em `STRIPE_PRICE_ID`
 4. **Developers → API keys** → copie a "Secret key" → cole em `STRIPE_SECRET_KEY`
@@ -89,7 +89,7 @@ Acesse `http://localhost:3000`.
 2. Em vercel.com → **Add New → Project** → importe o repositório
 3. Em **Environment Variables**, adicione TODAS as variáveis do seu `.env` (com os valores de produção — lembre de trocar as URLs de `localhost` para o domínio real depois do primeiro deploy)
 4. Deploy
-5. Depois do primeiro deploy, copie a URL gerada (ex: `chaveiro-pro.vercel.app`) e:
+5. Depois do primeiro deploy, copie a URL gerada (ex: `controle-estoque-vendas.vercel.app`) e:
    - Atualize `NEXTAUTH_URL` e `NEXT_PUBLIC_APP_URL` nas variáveis de ambiente da Vercel
    - Volte no Google e GitHub e adicione essa URL nos redirecionamentos OAuth (passos 2 e 3 acima)
    - Atualize a URL do webhook no Stripe (passo 4)

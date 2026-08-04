@@ -41,7 +41,7 @@ SMTP_HOST="smtp-relay.brevo.com"
 SMTP_PORT="587"
 SMTP_USER="seu_email_do_brevo@gmail.com"
 SMTP_PASS="xsmtpb-..."  # Cole a chave gerada
-SMTP_FROM="noreply@chaveiro.com"
+SMTP_FROM="seu-email-verificado@dominio.com"
 ```
 
 ---

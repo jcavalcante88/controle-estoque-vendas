@@ -46,7 +46,7 @@ export function EstoqueClient() {
           <h1 className="text-3xl font-bold text-white mb-1">Estoque</h1>
           <p className="text-sm text-white/40">Controle de entradas e saídas</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-500/20">
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-gray-900 font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-500/20">
           <SlidersHorizontal size={18} /> Movimentar
         </button>
       </div>
@@ -88,7 +88,7 @@ export function EstoqueClient() {
               return (
                 <tr key={p.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
                   <td className="px-5 py-4 font-medium text-white max-w-xs truncate">{p.nome}</td>
-                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full whitespace-nowrap">{p.categoria}</span></td>
+                  <td className="px-5 py-4"><span className="px-2 py-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full whitespace-nowrap">{p.categoria}</span></td>
                   <td className="px-5 py-4 font-semibold"><span className={low ? 'text-red-400' : 'text-white'}>{p.estoque}</span></td>
                   <td className="px-5 py-4 text-white/50">{p.minimo}</td>
                   <td className="px-5 py-4">
@@ -117,7 +117,7 @@ export function EstoqueClient() {
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white truncate">{p.nome}</p>
-                    <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
+                    <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
                   </div>
                   <div>
                     {low
@@ -198,7 +198,7 @@ export function EstoqueClient() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-white/60 hover:bg-white/5 transition text-sm">Cancelar</button>
-              <button onClick={handleSave} className="flex-1 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-xl hover:from-amber-300 transition text-sm">Registrar</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold rounded-xl hover:from-emerald-300 transition text-sm">Registrar</button>
             </div>
           </div>
         </div>

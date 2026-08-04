@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { Eye, EyeOff, Loader2, Key, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Store, Mail, Lock, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginForm() {
@@ -60,7 +60,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#0f0500]">
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-[#070d14]">
       {/* Blobs animados */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="blob blob-1" />
@@ -72,11 +72,11 @@ export default function LoginForm() {
       <div className="relative z-10 w-full max-w-md mx-4">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/30 mb-4">
-            <Key size={26} className="text-white" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-600 shadow-lg shadow-emerald-500/30 mb-4">
+            <Store size={26} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Chaveiro Pro</h1>
-          <p className="text-amber-200/60 text-sm mt-1">Sistema de Gestão</p>
+          <h1 className="text-2xl font-bold text-white">Estoque &amp; Vendas</h1>
+          <p className="text-emerald-200/60 text-sm mt-1">Sistema de Gestão</p>
         </div>
 
         <div className="glass-card p-8">
@@ -88,7 +88,7 @@ export default function LoginForm() {
                   onClick={() => { setMode(m); setError(''); }}
                   className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
                     mode === m
-                      ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30'
+                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
                       : 'text-white/50 hover:text-white/80'
                   }`}
                 >
@@ -151,7 +151,7 @@ export default function LoginForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold text-sm hover:from-amber-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/30 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold text-sm hover:from-emerald-300 hover:to-cyan-400 transition-all shadow-lg shadow-emerald-500/30 disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
                 {mode === 'login' ? 'Entrar' : 'Criar conta grátis'}
@@ -159,7 +159,7 @@ export default function LoginForm() {
 
               {mode === 'login' && (
                 <div className="text-center">
-                  <Link href="/forgot-password" className="text-amber-400 hover:text-amber-300 text-sm transition-colors">
+                  <Link href="/forgot-password" className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors">
                     Esqueceu sua senha?
                   </Link>
                 </div>

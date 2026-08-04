@@ -67,7 +67,7 @@ export default async function DashboardPage() {
 
 function AssinaturaWall({ motivo }: { motivo: string }) {
   const msgs: Record<string, { titulo: string; desc: string }> = {
-    trial_expirado: { titulo: 'Seu trial expirou', desc: 'Assine para continuar usando o Chaveiro Pro.' },
+    trial_expirado: { titulo: 'Seu trial expirou', desc: 'Assine para continuar usando o Estoque & Vendas.' },
     pagamento_pendente: { titulo: 'Pagamento pendente', desc: 'Regularize seu pagamento para reativar o acesso.' },
     cancelado: { titulo: 'Assinatura cancelada', desc: 'Reative sua assinatura para voltar a usar o sistema.' },
     sem_assinatura: { titulo: 'Sem assinatura', desc: 'Crie uma assinatura para começar a usar o sistema.' },
@@ -82,7 +82,7 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
       <form method="POST" action="/api/stripe/checkout">
         <button
           type="submit"
-          className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold rounded-lg hover:from-amber-500 hover:to-amber-600 transition"
+          className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold rounded-lg hover:from-emerald-500 hover:to-cyan-600 transition"
         >
           Assinar agora →
         </button>

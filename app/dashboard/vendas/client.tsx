@@ -78,7 +78,7 @@ export function VendasClient() {
         {/* Carrinho */}
         <div className="glass-card p-6">
           <h2 className="font-semibold text-white flex items-center gap-2 mb-5">
-            <ShoppingCart size={17} className="text-amber-400" /> Nova Venda
+            <ShoppingCart size={17} className="text-emerald-400" /> Nova Venda
           </h2>
           <div className="flex gap-2 mb-5">
             <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="glass-input flex-1" style={{ paddingLeft: '12px' }}>
@@ -88,7 +88,7 @@ export function VendasClient() {
               ))}
             </select>
             <input type="number" min={1} value={selectedQty} onChange={(e) => setSelectedQty(Number(e.target.value))} className="glass-input w-16 text-center" style={{ paddingLeft: '8px', paddingRight: '8px' }} />
-            <button onClick={addToCart} disabled={!selectedProduct} className="px-3 py-2 bg-amber-500/15 border border-amber-500/25 text-amber-400 rounded-xl hover:bg-amber-500/25 disabled:opacity-40 transition">
+            <button onClick={addToCart} disabled={!selectedProduct} className="px-3 py-2 bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 rounded-xl hover:bg-emerald-500/25 disabled:opacity-40 transition">
               <Plus size={18} />
             </button>
           </div>
@@ -119,7 +119,7 @@ export function VendasClient() {
                 <span className="text-xl font-bold text-green-400">{fmt(total)}</span>
               </div>
               <button onClick={handleFinalize} disabled={saving}
-                className="mt-4 w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-gray-900 font-bold rounded-xl disabled:opacity-60 transition shadow-lg shadow-amber-500/20">
+                className="mt-4 w-full py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-gray-900 font-bold rounded-xl disabled:opacity-60 transition shadow-lg shadow-emerald-500/20">
                 {saving ? 'Finalizando...' : 'Finalizar Venda'}
               </button>
             </>

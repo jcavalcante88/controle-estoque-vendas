@@ -15,13 +15,13 @@ export const transporter = nodemailer.createTransport({
 });
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || "https://chaveiro-saas.vercel.app";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://controle-estoque-vendas.vercel.app";
   const resetLink = `${baseUrl}${resetUrl}`;
 
   await transporter.sendMail({
-    from: `"Chaveiro Pro" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    from: `"Estoque & Vendas" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
-    subject: "🔑 Resetar sua senha - Chaveiro Pro",
+    subject: "Resetar sua senha - Estoque & Vendas",
     html: `
       <!DOCTYPE html>
       <html>
@@ -29,12 +29,12 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
           <style>
             body { font-family: Arial, sans-serif; background: #f9fafb; }
             .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-            .header { background: #0f0500; color: #f59e0b; padding: 30px; text-align: center; }
+            .header { background: #070d14; color: #34d399; padding: 30px; text-align: center; }
             .header h1 { margin: 0; font-size: 28px; }
             .content { padding: 30px; }
             .content h2 { color: #111827; margin-top: 0; }
             .button {
-              background: #f59e0b;
+              background: #10b981;
               color: white;
               padding: 14px 28px;
               border-radius: 6px;
@@ -44,7 +44,7 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
               font-weight: bold;
               text-align: center;
             }
-            .button:hover { background: #d97706; }
+            .button:hover { background: #059669; }
             .footer {
               background: #f3f4f6;
               padding: 20px;
@@ -53,8 +53,8 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
               font-size: 12px;
             }
             .warning {
-              background: #fef3c7;
-              border-left: 4px solid #f59e0b;
+              background: #ecfdf5;
+              border-left: 4px solid #10b981;
               padding: 12px;
               margin: 20px 0;
               border-radius: 4px;
@@ -64,13 +64,13 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🔑 Chaveiro Pro</h1>
+              <h1>Estoque &amp; Vendas</h1>
             </div>
 
             <div class="content">
               <h2>Resetar Sua Senha</h2>
               <p>Olá,</p>
-              <p>Você solicitou para resetar sua senha no Chaveiro Pro. Clique no botão abaixo para criar uma nova senha:</p>
+              <p>Você solicitou para resetar sua senha no Estoque &amp; Vendas. Clique no botão abaixo para criar uma nova senha:</p>
 
               <center>
                 <a href="${resetLink}" class="button">Resetar Senha</a>
@@ -91,8 +91,8 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
             </div>
 
             <div class="footer">
-              <p>&copy; 2026 Chaveiro Pro. Todos os direitos reservados.</p>
-              <p>Dúvidas? <a href="mailto:suporte@chaveiro.com" style="color: #f59e0b; text-decoration: none;">Contate nosso suporte</a></p>
+              <p>&copy; 2026 Estoque &amp; Vendas. Todos os direitos reservados.</p>
+              <p>Dúvidas? <a href="mailto:${process.env.SMTP_FROM || process.env.SMTP_USER}" style="color: #10b981; text-decoration: none;">Contate nosso suporte</a></p>
             </div>
           </div>
         </body>
