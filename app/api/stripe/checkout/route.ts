@@ -62,6 +62,9 @@ export async function POST(req: Request) {
         },
       ],
       metadata: { userId },
+      // O Stripe nao copia a metadata acima para a assinatura criada;
+      // sem isto o webhook nao consegue identificar o dono da assinatura.
+      subscription_data: { metadata: { userId } },
       success_url: `${baseUrl}/dashboard?assinatura=sucesso`,
       cancel_url: `${baseUrl}/dashboard?assinatura=cancelada`,
     });
