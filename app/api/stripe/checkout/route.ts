@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import type Stripe from "stripe";
 
 // Cria uma sessão de assinatura no Stripe.
 // O trial de 60 dias é controlado pela nossa própria Subscription
@@ -24,6 +25,19 @@ export async function POST(req: Request) {
     }
 
     let stripeCustomerId = subscription.stripeCustomerId;
+
+    // O cliente salvo pode nao existir na conta atual: os catalogos de teste e
+    // de producao sao separados, entao um ID criado em teste deixa de valer ao
+    // migrar para live (e o cliente tambem pode ter sido removido no Stripe).
+    if (stripeCustomerId) {
+      try {
+        const existente = await stripe.customers.retrieve(stripeCustomerId);
+        if ((existente as Stripe.DeletedCustomer).deleted) stripeCustomerId = null;
+      } catch {
+        stripeCustomerId = null;
+      }
+    }
+
     if (!stripeCustomerId) {
       const customer = await stripe.customers.create({
         email: session.user.email,
@@ -32,7 +46,8 @@ export async function POST(req: Request) {
       stripeCustomerId = customer.id;
       await prisma.subscription.update({
         where: { userId },
-        data: { stripeCustomerId },
+        // Zera tambem a assinatura antiga: ela pertencia ao cliente anterior.
+        data: { stripeCustomerId, stripeSubscriptionId: null },
       });
     }
 
