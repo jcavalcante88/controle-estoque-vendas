@@ -27,7 +27,12 @@ export async function POST(req: Request) {
   if (!acesso.liberado) return NextResponse.json({ error: 'Assinatura inativa' }, { status: 402 });
 
   const body = await req.json();
-  const { items } = body as { items: { productId: string; qty: number; price: number }[] };
+  const { items, clienteNome, clienteContato, pagamento } = body as {
+    items: { productId: string; qty: number; price: number }[];
+    clienteNome?: string;
+    clienteContato?: string;
+    pagamento?: string;
+  };
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: 'Nenhum item na venda' }, { status: 400 });
@@ -55,10 +60,21 @@ export async function POST(req: Request) {
 
   // Criar venda e baixar estoque numa transação
   const sale = await prisma.$transaction(async (tx) => {
+    // Numeração do recibo é sequencial por usuário (#0001, #0002...)
+    const ultima = await tx.sale.findFirst({
+      where: { userId },
+      orderBy: { numero: 'desc' },
+      select: { numero: true },
+    });
+
     const created = await tx.sale.create({
       data: {
         userId,
         total,
+        numero: (ultima?.numero ?? 0) + 1,
+        clienteNome: clienteNome?.trim() || null,
+        clienteContato: clienteContato?.trim() || null,
+        pagamento: pagamento?.trim() || null,
         items: {
           create: items.map((i) => ({ productId: i.productId, qty: i.qty, price: i.price })),
         },

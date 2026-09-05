@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { reciboEmailHtml, numeroRecibo, type ReciboData } from "@/lib/recibo";
 
 // Configuração do transporter Brevo
 export const transporter = nodemailer.createTransport({
@@ -98,5 +99,20 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
         </body>
       </html>
     `,
+  });
+}
+
+// Envia o recibo da venda para o e-mail do cliente.
+export async function sendReciboEmail(
+  destinatario: string,
+  data: ReciboData
+) {
+  const empresa = data.empresa.nome || "Estoque & Vendas";
+
+  await transporter.sendMail({
+    from: `"${empresa}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    to: destinatario,
+    subject: `Recibo ${numeroRecibo(data.numero)} - ${empresa}`,
+    html: reciboEmailHtml(data),
   });
 }

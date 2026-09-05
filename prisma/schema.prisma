@@ -24,6 +24,12 @@ model User {
   resetTokenExpires   DateTime?
   createdAt           DateTime  @default(now())
 
+  // Dados do negócio — usados no cabeçalho do recibo entregue ao cliente
+  empresaNome         String?
+  empresaDocumento    String?
+  empresaTelefone     String?
+  empresaEndereco     String?
+
   accounts            Account[]
   sessions            Session[]
   subscription        Subscription?
@@ -112,7 +118,17 @@ model Sale {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   total     Float
   createdAt DateTime   @default(now())
+
+  // Recibo
+  numero         Int     @default(0) // número sequencial por usuário (#0001, #0002...)
+  token          String  @unique @default(cuid()) // link público do recibo, sem login
+  clienteNome    String?
+  clienteContato String? // telefone ou e-mail do cliente
+  pagamento      String? // dinheiro | pix | debito | credito | outro
+
   items     SaleItem[]
+
+  @@index([userId, numero])
 }
 
 model SaleItem {

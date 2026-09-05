@@ -117,3 +117,29 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── Recibo: impressão / salvar em PDF ── */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+
+  /* Mantém o cabeçalho escuro e o verde do total na impressão */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .recibo-page {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  @page {
+    margin: 12mm;
+  }
+}

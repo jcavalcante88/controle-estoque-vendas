@@ -1,13 +1,71 @@
 'use client';
 
-import { useState } from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, Loader2, Receipt } from 'lucide-react';
+
+type Empresa = {
+  empresaNome: string;
+  empresaDocumento: string;
+  empresaTelefone: string;
+  empresaEndereco: string;
+};
+
+const EMPRESA_VAZIA: Empresa = {
+  empresaNome: '',
+  empresaDocumento: '',
+  empresaTelefone: '',
+  empresaEndereco: '',
+};
 
 export default function ConfiguracoesPage() {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  const [empresa, setEmpresa] = useState<Empresa>(EMPRESA_VAZIA);
+  const [empresaLoading, setEmpresaLoading] = useState(true);
+  const [empresaSaving, setEmpresaSaving] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/settings/empresa')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setEmpresa({
+            empresaNome: data.empresaNome ?? '',
+            empresaDocumento: data.empresaDocumento ?? '',
+            empresaTelefone: data.empresaTelefone ?? '',
+            empresaEndereco: data.empresaEndereco ?? '',
+          });
+        }
+      })
+      .finally(() => setEmpresaLoading(false));
+  }, []);
+
+  async function handleSaveEmpresa() {
+    setEmpresaSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const res = await fetch('/api/settings/empresa', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(empresa),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Erro ao salvar os dados do negócio');
+        return;
+      }
+
+      setSuccess('Dados do recibo salvos!');
+    } finally {
+      setEmpresaSaving(false);
+    }
+  }
 
   async function handleCancelSubscription() {
     setCancelLoading(true);
@@ -33,6 +91,23 @@ export default function ConfiguracoesPage() {
     }
   }
 
+  const campo = (
+    label: string,
+    chave: keyof Empresa,
+    placeholder: string
+  ) => (
+    <div>
+      <label className="block text-xs text-white/50 mb-1.5">{label}</label>
+      <input
+        value={empresa[chave]}
+        onChange={(e) => setEmpresa({ ...empresa, [chave]: e.target.value })}
+        placeholder={placeholder}
+        className="glass-input"
+        style={{ paddingLeft: '12px' }}
+      />
+    </div>
+  );
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
@@ -53,6 +128,38 @@ export default function ConfiguracoesPage() {
           <p className="text-green-400 text-sm">{success}</p>
         </div>
       )}
+
+      {/* Dados do recibo */}
+      <div className="glass-card p-6">
+        <h2 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
+          <Receipt size={18} className="text-emerald-400" /> Dados do Recibo
+        </h2>
+        <p className="text-white/50 text-sm mb-5">
+          Essas informações aparecem no cabeçalho do recibo que você entrega ao cliente.
+        </p>
+
+        {empresaLoading ? (
+          <p className="text-white/40 text-sm py-4">Carregando...</p>
+        ) : (
+          <div className="space-y-4">
+            {campo('Nome do negócio', 'empresaNome', 'Ex: Loja do Jerry')}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {campo('CNPJ ou CPF', 'empresaDocumento', '00.000.000/0000-00')}
+              {campo('Telefone / WhatsApp', 'empresaTelefone', '(00) 00000-0000')}
+            </div>
+            {campo('Endereço', 'empresaEndereco', 'Rua, número, bairro, cidade')}
+
+            <button
+              onClick={handleSaveEmpresa}
+              disabled={empresaSaving}
+              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-gray-900 font-bold text-sm disabled:opacity-60 transition flex items-center justify-center gap-2"
+            >
+              {empresaSaving && <Loader2 size={16} className="animate-spin" />}
+              Salvar dados
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Assinatura */}
       <div className="glass-card p-6">
