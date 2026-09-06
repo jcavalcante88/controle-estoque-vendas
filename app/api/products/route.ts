@@ -6,7 +6,7 @@ import { checkAcesso } from "@/lib/acesso";
 // IMPORTANTE: toda consulta usa "where: { userId }" — isso é o que garante
 // que o cliente A nunca veja os produtos do cliente B. É a base do multi-cliente.
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -17,8 +17,15 @@ export async function GET() {
     return NextResponse.json({ error: "Assinatura inativa", motivo: acesso.motivo }, { status: 402 });
   }
 
+  // ?arquivados=1 lista só os arquivados (tela de produtos, para restaurar)
+  const { searchParams } = new URL(req.url);
+  const arquivados = searchParams.get("arquivados") === "1";
+
   const products = await prisma.product.findMany({
-    where: { userId: session.user.id },
+    where: {
+      userId: session.user.id,
+      arquivadoEm: arquivados ? { not: null } : null,
+    },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(products);
@@ -73,6 +80,15 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
   }
 
+  // Tirar um produto do arquivo e devolver para o catálogo
+  if (body.restaurar) {
+    const restaurado = await prisma.product.update({
+      where: { id },
+      data: { arquivadoEm: null },
+    });
+    return NextResponse.json(restaurado);
+  }
+
   const updated = await prisma.product.update({
     where: { id },
     data: {
@@ -106,11 +122,47 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "ID do produto é obrigatório" }, { status: 400 });
   }
 
-  const product = await prisma.product.findUnique({ where: { id } });
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { _count: { select: { saleItems: true, stockMovements: true } } },
+  });
+
   if (!product || product.userId !== session.user.id) {
     return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
   }
 
-  await prisma.product.delete({ where: { id } });
-  return NextResponse.json({ deleted: true });
+  // Produto que já apareceu em venda ou movimentação não pode ser apagado:
+  // isso apagaria linhas do histórico e mudaria relatórios e recibos já emitidos.
+  // Nesse caso ele é arquivado — some do catálogo, mas o passado continua íntegro.
+  const temHistorico = product._count.saleItems > 0 || product._count.stockMovements > 0;
+
+  if (temHistorico) {
+    if (product.arquivadoEm) {
+      return NextResponse.json({ arquivado: true, jaArquivado: true });
+    }
+
+    await prisma.product.update({
+      where: { id },
+      data: { arquivadoEm: new Date() },
+    });
+
+    return NextResponse.json({
+      arquivado: true,
+      vendas: product._count.saleItems,
+      movimentacoes: product._count.stockMovements,
+    });
+  }
+
+  try {
+    await prisma.product.delete({ where: { id } });
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    // Rede de segurança: se o produto ganhou histórico entre a contagem e o delete,
+    // o Postgres barra por foreign key (P2003) — nesse caso arquivamos.
+    if ((error as { code?: string }).code === "P2003") {
+      await prisma.product.update({ where: { id }, data: { arquivadoEm: new Date() } });
+      return NextResponse.json({ arquivado: true });
+    }
+    throw error;
+  }
 }

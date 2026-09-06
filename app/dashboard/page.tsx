@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
 
   const [produtos, vendasHoje, vendasMes, vendasRecentes] = await Promise.all([
-    prisma.product.findMany({ where: { userId } }),
+    prisma.product.findMany({ where: { userId, arquivadoEm: null } }),
     prisma.sale.aggregate({
       where: { userId, createdAt: { gte: inicioDia } },
       _sum: { total: true },

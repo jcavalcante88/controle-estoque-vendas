@@ -47,6 +47,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
   }
 
+  if (product.arquivadoEm) {
+    return NextResponse.json(
+      { error: 'Produto arquivado. Restaure-o na tela de Produtos para movimentar o estoque.' },
+      { status: 422 }
+    );
+  }
+
   if (tipo === 'saida' && product.estoque < qty) {
     return NextResponse.json({ error: `Estoque insuficiente. Disponível: ${product.estoque}` }, { status: 422 });
   }

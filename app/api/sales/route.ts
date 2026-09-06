@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   // Verificar produtos do usuário e estoque suficiente
   const productIds = items.map((i) => i.productId);
   const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, userId: session.user.id },
+    where: { id: { in: productIds }, userId: session.user.id, arquivadoEm: null },
   });
 
   if (products.length !== productIds.length) {

@@ -25,7 +25,7 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'asc' },
       include: { items: { include: { product: { select: { nome: true } } } } },
     }),
-    prisma.product.findMany({ where: { userId } }),
+    prisma.product.findMany({ where: { userId, arquivadoEm: null } }),
   ]);
 
   // Vendas por dia

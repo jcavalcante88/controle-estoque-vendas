@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Archive, RotateCcw, Info } from 'lucide-react';
 
 interface Product { id: string; nome: string; categoria: string; custo: number; preco: number; estoque: number; minimo: number }
 
@@ -15,12 +15,14 @@ export function ProdutosClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [formData, setFormData] = useState({ nome: '', categoria: '', custo: 0, preco: 0, estoque: 0, minimo: 0 });
+  const [verArquivados, setVerArquivados] = useState(false);
+  const [aviso, setAviso] = useState('');
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => { fetchProducts(verArquivados); }, [verArquivados]);
 
-  async function fetchProducts() {
+  async function fetchProducts(arquivados = verArquivados) {
     setLoading(true);
-    const res = await fetch('/api/products');
+    const res = await fetch(`/api/products${arquivados ? '?arquivados=1' : ''}`);
     if (res.ok) setProducts(await res.json());
     setLoading(false);
   }
@@ -36,9 +38,35 @@ export function ProdutosClient() {
     fetchProducts();
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Deletar este produto?')) return;
-    await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+  async function handleDelete(id: string, nome: string) {
+    if (!confirm(`Excluir "${nome}"?\n\nSe ele já apareceu em alguma venda, será arquivado em vez de apagado — assim o histórico e os recibos continuam corretos.`)) return;
+    setAviso('');
+
+    const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      alert(data.error ?? 'Erro ao excluir produto');
+      return;
+    }
+
+    if (data.arquivado) {
+      setAviso(`"${nome}" foi arquivado porque já tem histórico (${data.vendas ?? 0} venda(s)). Ele saiu do catálogo, mas os relatórios e recibos antigos seguem intactos. Para vê-lo de novo, use "Ver arquivados".`);
+    }
+
+    fetchProducts();
+  }
+
+  async function handleRestaurar(id: string, nome: string) {
+    const res = await fetch('/api/products', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, restaurar: true }),
+    });
+
+    if (!res.ok) { alert('Erro ao restaurar produto'); return; }
+
+    setAviso(`"${nome}" voltou para o catálogo.`);
     fetchProducts();
   }
 
@@ -73,7 +101,31 @@ export function ProdutosClient() {
           <option value="" className="bg-[#1a0a00]">Todas categorias</option>
           {categories.map((c) => <option key={c} value={c} className="bg-[#1a0a00]">{c}</option>)}
         </select>
+        <button
+          onClick={() => { setAviso(''); setVerArquivados((v) => !v); }}
+          className={`flex items-center gap-2 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition ${
+            verArquivados
+              ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+              : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
+          }`}
+        >
+          <Archive size={15} /> {verArquivados ? 'Ver catálogo' : 'Ver arquivados'}
+        </button>
       </div>
+
+      {aviso && (
+        <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/20 text-amber-200/90 px-4 py-3 rounded-xl text-sm">
+          <Info size={17} className="flex-shrink-0 mt-0.5 text-amber-400" />
+          <p className="flex-1">{aviso}</p>
+          <button onClick={() => setAviso('')} className="text-amber-200/50 hover:text-amber-200 text-xs">Fechar</button>
+        </div>
+      )}
+
+      {verArquivados && (
+        <p className="text-sm text-white/40">
+          Produtos arquivados não aparecem no catálogo nem na tela de vendas, mas continuam no histórico.
+        </p>
+      )}
 
       {/* Desktop: Tabela */}
       <div className="glass-card overflow-hidden hidden lg:block">
@@ -103,8 +155,16 @@ export function ProdutosClient() {
                     <span className={low ? 'text-red-400 font-semibold' : 'text-white/70'}>{p.estoque} {low && '⚠️'}</span>
                   </td>
                   <td className="px-5 py-4 flex gap-2">
-                    <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={15} className="text-blue-400" /></button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={15} className="text-red-400" /></button>
+                    {verArquivados ? (
+                      <button onClick={() => handleRestaurar(p.id, p.nome)} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold text-white/70 hover:bg-white/10 transition">
+                        <RotateCcw size={13} className="text-emerald-400" /> Restaurar
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={15} className="text-blue-400" /></button>
+                        <button onClick={() => handleDelete(p.id, p.nome)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={15} className="text-red-400" /></button>
+                      </>
+                    )}
                   </td>
                 </tr>
               );
@@ -130,8 +190,16 @@ export function ProdutosClient() {
                     <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={16} className="text-blue-400" /></button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={16} className="text-red-400" /></button>
+                    {verArquivados ? (
+                      <button onClick={() => handleRestaurar(p.id, p.nome)} className="flex items-center gap-1.5 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold text-white/70 hover:bg-white/10 transition">
+                        <RotateCcw size={14} className="text-emerald-400" /> Restaurar
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={16} className="text-blue-400" /></button>
+                        <button onClick={() => handleDelete(p.id, p.nome)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={16} className="text-red-400" /></button>
+                      </>
+                    )}
                   </div>
                 </div>
 

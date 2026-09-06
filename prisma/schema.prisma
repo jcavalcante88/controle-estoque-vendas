@@ -108,6 +108,9 @@ model Product {
   minimo    Int
   createdAt DateTime @default(now())
 
+  // Produto ja vendido nao pode ser apagado (quebraria o historico): ele e arquivado
+  arquivadoEm DateTime?
+
   saleItems      SaleItem[]
   stockMovements StockMovement[]
 }
