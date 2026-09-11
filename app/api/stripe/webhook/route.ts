@@ -77,7 +77,8 @@ function assinaturaDaFatura(fatura: Stripe.Invoice): string | null {
 // casos faz o Stripe repetir o mesmo evento até desativar o endpoint.
 function ehErroPermanente(err: any): boolean {
   if (err?.type === "StripeInvalidRequestError") return true;
-  if (err?.code === "P2025" || err?.code === "P2002") return true;
+  // P2025 registro ausente, P2002 unicidade, P2003 chave estrangeira.
+  if (err?.code === "P2025" || err?.code === "P2002" || err?.code === "P2003") return true;
   return false;
 }
 
@@ -85,6 +86,17 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
   const userId = await resolverUserId(metadataUserId ?? sub.metadata?.userId, sub.customer);
   if (!userId) {
     console.error("Webhook: nao foi possivel identificar o usuario da assinatura", sub.id);
+    return;
+  }
+
+  // A mesma conta Stripe atende mais de um produto, e cada endpoint recebe os
+  // eventos da conta inteira — inclusive os dos outros apps. Se o usuário não
+  // existe neste banco, a assinatura é de outro produto: ignorar. Sem isto o
+  // upsert estoura chave estrangeira, devolve 500 e o Stripe reenvia até
+  // desativar o endpoint.
+  const existe = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!existe) {
+    console.warn("Webhook: assinatura de usuario de outro app, ignorada", sub.id, userId);
     return;
   }
 
