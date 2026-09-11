@@ -3,6 +3,11 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
+// A verificação de assinatura do Stripe depende do corpo cru e do crypto do
+// Node; fixamos o runtime para o deploy nunca inferir edge por engano.
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 // O Stripe não copia a metadata da sessão de checkout para a assinatura.
 // Por isso resolvemos o usuário por dois caminhos: a metadata (quando existe)
 // e, como garantia, o stripeCustomerId que já gravamos ao criar o cliente.
@@ -31,6 +36,15 @@ function fimDoPeriodo(sub: Stripe.Subscription): Date | undefined {
   return ts ? new Date(ts * 1000) : undefined;
 }
 
+// Erros que reenviar não resolve: o evento veio de outro ambiente (teste x live),
+// o recurso não existe mais, ou o registro colide com outro. Devolver 500 nesses
+// casos faz o Stripe repetir o mesmo evento até desativar o endpoint.
+function ehErroPermanente(err: any): boolean {
+  if (err?.type === "StripeInvalidRequestError") return true;
+  if (err?.code === "P2025" || err?.code === "P2002") return true;
+  return false;
+}
+
 async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: string) {
   const userId = await resolverUserId(metadataUserId ?? sub.metadata?.userId, sub.customer);
   if (!userId) {
@@ -38,29 +52,41 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
     return;
   }
 
-  await prisma.subscription.update({
+  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+  const dados = {
+    stripeSubscriptionId: sub.id,
+    stripePriceId: sub.items?.data?.[0]?.price?.id,
+    status: sub.status,
+    currentPeriodEnd: fimDoPeriodo(sub),
+  };
+
+  // upsert em vez de update: se a linha ainda não existe (conta criada antes do
+  // trial, base recriada), o update lançava P2025 e o webhook devolvia 500.
+  await prisma.subscription.upsert({
     where: { userId },
-    data: {
-      stripeSubscriptionId: sub.id,
-      stripePriceId: sub.items?.data?.[0]?.price?.id,
-      status: sub.status,
-      currentPeriodEnd: fimDoPeriodo(sub),
-    },
+    update: dados,
+    create: { userId, stripeCustomerId: customerId ?? null, ...dados },
   });
 }
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+
+  const segredo = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!segredo) {
+    console.error("Webhook: STRIPE_WEBHOOK_SECRET nao configurado neste ambiente");
+    return NextResponse.json({ error: "Webhook nao configurado" }, { status: 500 });
+  }
+  if (!sig) {
+    return NextResponse.json({ error: "Assinatura ausente" }, { status: 400 });
+  }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, segredo);
   } catch (err: any) {
+    console.error("Webhook: assinatura invalida.", err?.message);
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
@@ -87,7 +113,8 @@ export async function POST(req: Request) {
         const sub = event.data.object as Stripe.Subscription;
         const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
         if (userId) {
-          await prisma.subscription.update({
+          // updateMany não estoura quando o registro não existe.
+          await prisma.subscription.updateMany({
             where: { userId },
             data: { status: "canceled" },
           });
@@ -103,7 +130,7 @@ export async function POST(req: Request) {
           const sub = await stripe.subscriptions.retrieve(subId);
           const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
           if (userId) {
-            await prisma.subscription.update({
+            await prisma.subscription.updateMany({
               where: { userId },
               data: { status: event.type === "invoice.payment_failed" ? "past_due" : sub.status },
             });
@@ -113,8 +140,14 @@ export async function POST(req: Request) {
       }
     }
   } catch (err: any) {
-    // Devolver 500 faz o Stripe reenviar o evento, evitando perda silenciosa.
-    console.error("Webhook: falha ao processar", event.type, err?.message);
+    if (ehErroPermanente(err)) {
+      // Confirmamos o recebimento para o Stripe parar de reenviar: o problema
+      // está no dado, não na entrega. Fica registrado no log para investigação.
+      console.error("Webhook: evento descartado", event.id, event.type, err?.message);
+      return NextResponse.json({ received: true, ignored: true });
+    }
+    // Falha transitória (banco fora do ar, timeout): 500 faz o Stripe reenviar.
+    console.error("Webhook: falha ao processar", event.id, event.type, err?.message);
     return NextResponse.json({ error: "Falha ao processar evento" }, { status: 500 });
   }
 
