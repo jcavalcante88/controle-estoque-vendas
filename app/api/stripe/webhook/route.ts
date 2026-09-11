@@ -27,6 +27,16 @@ async function resolverUserId(
   return registro?.userId ?? null;
 }
 
+// Extrai um id de um campo que pode vir como string ou objeto expandido.
+function idDe(valor: unknown): string | null {
+  if (typeof valor === "string") return valor;
+  if (valor && typeof valor === "object") {
+    const id = (valor as { id?: unknown }).id;
+    if (typeof id === "string") return id;
+  }
+  return null;
+}
+
 // Versões recentes da API movem current_period_end para o item da assinatura.
 function fimDoPeriodo(sub: Stripe.Subscription): Date | undefined {
   const raiz = (sub as unknown as { current_period_end?: number }).current_period_end;
@@ -34,6 +44,32 @@ function fimDoPeriodo(sub: Stripe.Subscription): Date | undefined {
     ?.current_period_end;
   const ts = raiz ?? item;
   return ts ? new Date(ts * 1000) : undefined;
+}
+
+// A partir da versão 2025-03-31 da API o campo invoice.subscription deixou de
+// existir: a referência passou para invoice.parent.subscription_details, e nas
+// linhas para parent.subscription_item_details. O endpoint entrega o payload na
+// versão configurada nele — que não é a do nosso SDK —, então aceitamos as duas
+// formas. Sem isto o evento chega, não encontra a assinatura e é ignorado em
+// silêncio, deixando renovações sem registro.
+function assinaturaDaFatura(fatura: Stripe.Invoice): string | null {
+  const f = fatura as unknown as {
+    subscription?: unknown;
+    parent?: { subscription_details?: { subscription?: unknown } | null } | null;
+    lines?: { data?: Array<{ parent?: { subscription_item_details?: { subscription?: unknown } | null } | null }> };
+  };
+
+  const candidatos: unknown[] = [
+    f.subscription,
+    f.parent?.subscription_details?.subscription,
+    ...(f.lines?.data ?? []).map((linha) => linha?.parent?.subscription_item_details?.subscription),
+  ];
+
+  for (const candidato of candidatos) {
+    const id = idDe(candidato);
+    if (id) return id;
+  }
+  return null;
 }
 
 // Erros que reenviar não resolve: o evento veio de outro ambiente (teste x live),
@@ -52,7 +88,7 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
     return;
   }
 
-  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+  const customerId = idDe(sub.customer);
   const dados = {
     stripeSubscriptionId: sub.id,
     stripePriceId: sub.items?.data?.[0]?.price?.id,
@@ -65,7 +101,7 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
   await prisma.subscription.upsert({
     where: { userId },
     update: dados,
-    create: { userId, stripeCustomerId: customerId ?? null, ...dados },
+    create: { userId, stripeCustomerId: customerId, ...dados },
   });
 }
 
@@ -96,8 +132,9 @@ export async function POST(req: Request) {
       // metadata com o userId realmente existe.
       case "checkout.session.completed": {
         const sessao = event.data.object as Stripe.Checkout.Session;
-        if (sessao.subscription) {
-          const sub = await stripe.subscriptions.retrieve(sessao.subscription as string);
+        const subId = idDe(sessao.subscription);
+        if (subId) {
+          const sub = await stripe.subscriptions.retrieve(subId);
           await salvarAssinatura(sub, sessao.metadata?.userId);
         }
         break;
@@ -125,16 +162,19 @@ export async function POST(req: Request) {
       case "invoice.payment_succeeded":
       case "invoice.payment_failed": {
         const fatura = event.data.object as Stripe.Invoice;
-        const subId = (fatura as unknown as { subscription?: string | null }).subscription;
-        if (subId) {
-          const sub = await stripe.subscriptions.retrieve(subId);
-          const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
-          if (userId) {
-            await prisma.subscription.updateMany({
-              where: { userId },
-              data: { status: event.type === "invoice.payment_failed" ? "past_due" : sub.status },
-            });
-          }
+        const subId = assinaturaDaFatura(fatura);
+        if (!subId) {
+          // Fatura avulsa não tem assinatura; não é erro.
+          console.warn("Webhook: fatura sem assinatura vinculada", fatura.id);
+          break;
+        }
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const userId = await resolverUserId(sub.metadata?.userId, sub.customer);
+        if (userId) {
+          await prisma.subscription.updateMany({
+            where: { userId },
+            data: { status: event.type === "invoice.payment_failed" ? "past_due" : sub.status },
+          });
         }
         break;
       }
