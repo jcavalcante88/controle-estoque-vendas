@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import type Stripe from "stripe";
+import { PRECO_MENSAL_CENTAVOS } from "@/lib/acesso";
 
 // Cria uma sessão de assinatura no Stripe.
 // O trial de 60 dias é controlado pela nossa própria Subscription
@@ -15,9 +16,6 @@ export async function POST(req: Request) {
     }
 
     const userId = session.user.id;
-    if (!process.env.STRIPE_PRICE_ID) {
-      return NextResponse.json({ error: "STRIPE_PRICE_ID não configurado" }, { status: 500 });
-    }
 
     let subscription = await prisma.subscription.findUnique({ where: { userId } });
     if (!subscription) {
@@ -70,9 +68,16 @@ export async function POST(req: Request) {
       mode: "subscription",
       customer: stripeCustomerId,
       payment_method_types: ["card"],
+      // Preço definido no código (R$ 49,99/mês) em vez de um price ID do
+      // painel: preços no Stripe não podem ser editados, só recriados.
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID,
+          price_data: {
+            currency: "brl",
+            unit_amount: PRECO_MENSAL_CENTAVOS,
+            recurring: { interval: "month" },
+            product_data: { name: "Controle Estoque & Vendas - Plano Mensal" },
+          },
           quantity: 1,
         },
       ],

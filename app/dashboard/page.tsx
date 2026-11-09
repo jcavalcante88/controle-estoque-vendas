@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { checkAcesso } from '@/lib/acesso';
+import { checkAcesso, PRECO_MENSAL_TEXTO } from '@/lib/acesso';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { VisaoGeralClient } from './visao-geral-client';
@@ -58,7 +58,8 @@ export default async function DashboardPage() {
         itens: v.items.length,
       }))}
       statusAssinatura={{
-        status: sub?.status ?? 'sem_assinatura',
+        // Dono (e assinantes ativos) não veem o aviso de trial.
+        status: acesso.motivo === 'active' ? 'active' : (sub?.status ?? 'sem_assinatura'),
         diasRestantesTrial,
       }}
     />
@@ -79,6 +80,7 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl">🔒</div>
       <h2 className="text-2xl font-bold text-gray-900">{info.titulo}</h2>
       <p className="text-gray-600 max-w-sm">{info.desc}</p>
+      <p className="text-3xl font-extrabold text-emerald-400">{PRECO_MENSAL_TEXTO}</p>
       <form method="POST" action="/api/stripe/checkout">
         <button
           type="submit"

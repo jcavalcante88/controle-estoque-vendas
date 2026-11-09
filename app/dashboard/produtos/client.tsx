@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, Archive, RotateCcw, Info } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Archive, RotateCcw, Info, AlertTriangle, PackageOpen } from 'lucide-react';
 
 interface Product { id: string; nome: string; categoria: string; custo: number; preco: number; estoque: number; minimo: number }
 
 const fmt = (v: number) => `R$ ${v.toFixed(2)}`;
+const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export function ProdutosClient() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -91,19 +92,20 @@ export function ProdutosClient() {
         </button>
       </div>
 
-      <div className="flex gap-3">
-        <div className="flex-1 relative">
+      {/* No celular: busca em linha inteira, filtros embaixo lado a lado */}
+      <div className="grid grid-cols-2 gap-3 lg:flex">
+        <div className="col-span-2 lg:flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} />
           <input type="text" placeholder="Buscar por nome..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
             className="glass-input w-full pl-9" />
         </div>
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="glass-input px-4">
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="glass-input px-4 min-w-0 w-full lg:w-auto">
           <option value="" className="bg-[#1a0a00]">Todas categorias</option>
           {categories.map((c) => <option key={c} value={c} className="bg-[#1a0a00]">{c}</option>)}
         </select>
         <button
           onClick={() => { setAviso(''); setVerArquivados((v) => !v); }}
-          className={`flex items-center gap-2 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition ${
+          className={`flex items-center justify-center gap-2 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition ${
             verArquivados
               ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
               : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10'
@@ -176,50 +178,118 @@ export function ProdutosClient() {
 
       {/* Mobile: Cards */}
       {filtered.length === 0 ? (
-        <div className="lg:hidden text-center text-white/30 py-10">Nenhum produto encontrado</div>
+        <div className="lg:hidden flex flex-col items-center text-center gap-3 py-14 px-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02]">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+            <PackageOpen size={26} className="text-emerald-400" />
+          </div>
+          <p className="text-white/70 font-medium">Nenhum produto encontrado</p>
+          {!verArquivados && !searchTerm && !categoryFilter && (
+            <button onClick={() => setShowModal(true)} className="mt-1 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm">
+              <Plus size={16} /> Cadastrar primeiro produto
+            </button>
+          )}
+        </div>
       ) : (
-        <div className="lg:hidden space-y-3">
+        <div className="lg:hidden space-y-4">
+          <p className="text-xs text-white/40 px-1">
+            {filtered.length} {filtered.length === 1 ? 'produto' : 'produtos'}
+          </p>
           {filtered.map((p) => {
             const margem = p.preco > 0 ? Math.round(((p.preco - p.custo) / p.preco) * 100) : 0;
+            const lucro = p.preco - p.custo;
             const low = p.estoque <= p.minimo;
+            const zerado = p.estoque <= 0;
+            // Barra de estoque: cheia quando tem o dobro do mínimo (ou mais).
+            const referencia = Math.max(p.minimo * 2, 1);
+            const nivel = Math.min(100, Math.max(zerado ? 0 : 6, Math.round((p.estoque / referencia) * 100)));
+            const corMargem =
+              margem >= 30 ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/25'
+              : margem >= 15 ? 'text-amber-300 bg-amber-500/15 border-amber-500/25'
+              : 'text-red-300 bg-red-500/15 border-red-500/25';
             return (
-              <div key={p.id} className="glass-card p-4 space-y-3">
-                <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white truncate">{p.nome}</p>
-                    <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-full inline-block mt-1">{p.categoria}</span>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    {verArquivados ? (
-                      <button onClick={() => handleRestaurar(p.id, p.nome)} className="flex items-center gap-1.5 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-semibold text-white/70 hover:bg-white/10 transition">
-                        <RotateCcw size={14} className="text-emerald-400" /> Restaurar
-                      </button>
-                    ) : (
-                      <>
-                        <button onClick={() => handleEdit(p)} className="p-2 hover:bg-white/10 rounded-lg transition"><Edit2 size={16} className="text-blue-400" /></button>
-                        <button onClick={() => handleDelete(p.id, p.nome)} className="p-2 hover:bg-white/10 rounded-lg transition"><Trash2 size={16} className="text-red-400" /></button>
-                      </>
-                    )}
-                  </div>
-                </div>
+              <div
+                key={p.id}
+                className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br from-white/[0.07] to-white/[0.02] backdrop-blur-md shadow-lg shadow-black/20 ${
+                  low ? 'border-red-500/25' : 'border-white/10'
+                }`}
+              >
+                {/* Faixa colorida no topo */}
+                <div className={`h-1 w-full bg-gradient-to-r ${low ? 'from-red-500 to-amber-400' : 'from-emerald-400 to-cyan-500'}`} />
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Custo</p>
-                    <p className="text-sm font-medium text-white">{fmt(p.custo)}</p>
+                <div className="p-4 space-y-4">
+                  {/* Cabeçalho: inicial, nome, categoria e preço */}
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400/25 to-cyan-500/25 border border-emerald-400/20 flex items-center justify-center text-lg font-bold text-emerald-300 uppercase">
+                      {p.nome.trim().charAt(0) || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-white text-[15px] leading-snug line-clamp-2 break-words">{p.nome}</p>
+                      {p.categoria && (
+                        <span className="inline-block mt-1.5 max-w-full truncate text-[11px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                          {p.categoria}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <p className="text-[10px] uppercase tracking-wider text-white/40">Venda</p>
+                      <p className="text-lg font-extrabold text-white leading-tight">{brl(p.preco)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Venda</p>
-                    <p className="text-sm font-medium text-white">{fmt(p.preco)}</p>
+
+                  {/* Números do produto */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-black/20 border border-white/5 px-2.5 py-2">
+                      <p className="text-[10px] uppercase tracking-wider text-white/40">Custo</p>
+                      <p className="text-sm font-semibold text-white/90 truncate">{brl(p.custo)}</p>
+                    </div>
+                    <div className="rounded-xl bg-black/20 border border-white/5 px-2.5 py-2">
+                      <p className="text-[10px] uppercase tracking-wider text-white/40">Lucro/un</p>
+                      <p className={`text-sm font-semibold truncate ${lucro >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{brl(lucro)}</p>
+                    </div>
+                    <div className="rounded-xl bg-black/20 border border-white/5 px-2.5 py-2">
+                      <p className="text-[10px] uppercase tracking-wider text-white/40">Margem</p>
+                      <span className={`inline-block mt-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md border ${corMargem}`}>{margem}%</span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Margem</p>
-                    <p className="text-sm font-medium text-emerald-400">{margem}%</p>
+
+                  {/* Estoque com barra */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-white/50">
+                        Estoque: <span className={`font-bold ${low ? 'text-red-300' : 'text-white'}`}>{p.estoque} un</span>
+                        <span className="text-white/30"> · mín. {p.minimo}</span>
+                      </span>
+                      {low ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-300 bg-red-500/15 border border-red-500/25 px-2 py-0.5 rounded-full">
+                          <AlertTriangle size={11} /> {zerado ? 'Sem estoque' : 'Estoque baixo'}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">Em dia</span>
+                      )}
+                    </div>
+                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${low ? 'from-red-500 to-amber-400' : 'from-emerald-400 to-cyan-500'}`}
+                        style={{ width: `${nivel}%` }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-white/40 mb-1">Estoque</p>
-                    <p className={`text-sm font-medium ${low ? 'text-red-400' : 'text-white'}`}>{p.estoque} {low && '⚠️'}</p>
-                  </div>
+
+                  {/* Ações com botões grandes para o dedo */}
+                  {verArquivados ? (
+                    <button onClick={() => handleRestaurar(p.id, p.nome)} className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-500/10 border border-emerald-500/25 rounded-xl text-sm font-semibold text-emerald-300 active:scale-[0.98] transition">
+                      <RotateCcw size={15} /> Restaurar
+                    </button>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => handleEdit(p)} className="flex items-center justify-center gap-2 py-2.5 bg-blue-500/10 border border-blue-500/25 rounded-xl text-sm font-semibold text-blue-300 active:scale-[0.98] transition">
+                        <Edit2 size={15} /> Editar
+                      </button>
+                      <button onClick={() => handleDelete(p.id, p.nome)} className="flex items-center justify-center gap-2 py-2.5 bg-red-500/10 border border-red-500/25 rounded-xl text-sm font-semibold text-red-300 active:scale-[0.98] transition">
+                        <Trash2 size={15} /> Excluir
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -36,7 +36,7 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
               <p className="text-white font-medium">
                 {statusAssinatura.diasRestantesTrial} {statusAssinatura.diasRestantesTrial === 1 ? 'dia' : 'dias'} de trial restantes
               </p>
-              <p className="text-sm text-white/60">Assine para continuar usando após o trial</p>
+              <p className="text-sm text-white/60">Assine por R$ 49,99/mês para continuar usando após o trial</p>
             </div>
           </div>
           <form method="POST" action="/api/stripe/checkout">
