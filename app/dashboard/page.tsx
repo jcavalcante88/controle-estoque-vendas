@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth';
-import { checkAcesso, PRECO_MENSAL_TEXTO } from '@/lib/acesso';
+import { checkAcesso, PRECO_MENSAL_TEXTO, DIAS_POR_PIX } from '@/lib/acesso';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { VisaoGeralClient } from './visao-geral-client';
@@ -72,23 +72,43 @@ function AssinaturaWall({ motivo }: { motivo: string }) {
     pagamento_pendente: { titulo: 'Pagamento pendente', desc: 'Regularize seu pagamento para reativar o acesso.' },
     cancelado: { titulo: 'Assinatura cancelada', desc: 'Reative sua assinatura para voltar a usar o sistema.' },
     sem_assinatura: { titulo: 'Sem assinatura', desc: 'Crie uma assinatura para começar a usar o sistema.' },
+    pix_vencido: { titulo: 'Seus dias pagos acabaram', desc: 'Pague mais um mês com Pix ou assine no cartão para continuar.' },
   };
   const info = msgs[motivo] ?? { titulo: 'Acesso bloqueado', desc: 'Entre em contato com o suporte.' };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4 px-2">
       <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl">🔒</div>
-      <h2 className="text-2xl font-bold text-gray-900">{info.titulo}</h2>
-      <p className="text-gray-600 max-w-sm">{info.desc}</p>
+      <h2 className="text-2xl font-bold text-white">{info.titulo}</h2>
+      <p className="text-white/60 max-w-sm">{info.desc}</p>
       <p className="text-3xl font-extrabold text-emerald-400">{PRECO_MENSAL_TEXTO}</p>
-      <form method="POST" action="/api/stripe/checkout">
-        <button
-          type="submit"
-          className="mt-2 inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 font-bold rounded-lg hover:from-emerald-500 hover:to-cyan-600 transition"
-        >
-          Assinar agora →
+      <BotoesPagamento />
+    </div>
+  );
+}
+
+// Duas formas de pagar: cartão (renova sozinho todo mês) ou Pix (paga 30 dias por vez).
+function BotoesPagamento({ compacto = false }: { compacto?: boolean }) {
+  const base = compacto
+    ? 'w-full px-4 py-2 rounded-lg text-sm font-bold transition'
+    : 'w-full px-6 py-3 rounded-xl font-bold transition';
+  return (
+    <div className={`flex flex-col sm:flex-row gap-3 ${compacto ? '' : 'w-full max-w-md mt-2'}`}>
+      <form method="POST" action="/api/stripe/checkout" className="flex-1">
+        <input type="hidden" name="metodo" value="cartao" />
+        <button type="submit" className={`${base} bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 hover:from-emerald-300 hover:to-cyan-400`}>
+          💳 Assinar no cartão
         </button>
       </form>
+      <form method="POST" action="/api/stripe/checkout" className="flex-1">
+        <input type="hidden" name="metodo" value="pix" />
+        <button type="submit" className={`${base} bg-white/10 border border-white/20 text-white hover:bg-white/15`}>
+          ⚡ Pagar com Pix
+        </button>
+      </form>
+      {!compacto && (
+        <p className="text-xs text-white/40 sm:hidden">Pix libera {DIAS_POR_PIX} dias por pagamento. Cartão renova sozinho.</p>
+      )}
     </div>
   );
 }

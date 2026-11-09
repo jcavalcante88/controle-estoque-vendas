@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import { DIAS_POR_PIX, MARCA_PIX } from "@/lib/acesso";
 
 // A verificação de assinatura do Stripe depende do corpo cru e do crypto do
 // Node; fixamos o runtime para o deploy nunca inferir edge por engano.
@@ -117,6 +118,37 @@ async function salvarAssinatura(sub: Stripe.Subscription, metadataUserId?: strin
   });
 }
 
+// Pix pago: soma DIAS_POR_PIX dias ao acesso. Se ainda havia dias pagos, conta
+// a partir do fim deles (pagar adiantado não perde dias). O id do pagamento fica
+// em stripeSubscriptionId para o mesmo evento reenviado não somar duas vezes.
+async function liberarPix(sessao: Stripe.Checkout.Session) {
+  const userId = await resolverUserId(sessao.metadata?.userId, sessao.customer);
+  if (!userId) {
+    console.error("Webhook: Pix sem usuario identificado", sessao.id);
+    return;
+  }
+  const existe = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!existe) return;
+
+  const pagamentoId = `pix_${idDe(sessao.payment_intent) ?? sessao.id}`;
+  const atual = await prisma.subscription.findUnique({ where: { userId } });
+  if (atual?.stripeSubscriptionId === pagamentoId) return; // já processado
+
+  const agora = new Date();
+  const base =
+    atual?.stripePriceId === MARCA_PIX && atual.status === "active" && atual.currentPeriodEnd && atual.currentPeriodEnd > agora
+      ? atual.currentPeriodEnd
+      : agora;
+  const fim = new Date(base.getTime() + DIAS_POR_PIX * 24 * 60 * 60 * 1000);
+
+  const dados = { status: "active", stripePriceId: MARCA_PIX, stripeSubscriptionId: pagamentoId, currentPeriodEnd: fim };
+  await prisma.subscription.upsert({
+    where: { userId },
+    update: dados,
+    create: { userId, stripeCustomerId: idDe(sessao.customer), ...dados },
+  });
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -142,8 +174,16 @@ export async function POST(req: Request) {
     switch (event.type) {
       // Disparado assim que o cliente conclui o pagamento. É aqui que a
       // metadata com o userId realmente existe.
+      // Pix: o "completed" pode chegar ainda sem pagamento (QR code gerado);
+      // a confirmação vem no "async_payment_succeeded". Os dois passam por aqui
+      // e só liberam quando payment_status === "paid".
+      case "checkout.session.async_payment_succeeded":
       case "checkout.session.completed": {
         const sessao = event.data.object as Stripe.Checkout.Session;
+        if (sessao.metadata?.tipo === "pix_mensal") {
+          if (sessao.payment_status === "paid") await liberarPix(sessao);
+          break;
+        }
         const subId = idDe(sessao.subscription);
         if (subId) {
           const sub = await stripe.subscriptions.retrieve(subId);

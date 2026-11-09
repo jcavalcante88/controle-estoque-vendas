@@ -2,13 +2,19 @@ import { prisma } from "@/lib/prisma";
 
 export type AcessoStatus = {
   liberado: boolean;
-  motivo: "trialing" | "active" | "trial_expirado" | "sem_assinatura" | "pagamento_pendente" | "cancelado";
+  motivo: "trialing" | "active" | "trial_expirado" | "sem_assinatura" | "pagamento_pendente" | "cancelado" | "pix_vencido";
   diasRestantesTrial: number | null;
 };
 
 // Valor da assinatura mensal, em centavos (R$ 49,99).
 export const PRECO_MENSAL_CENTAVOS = 4999;
 export const PRECO_MENSAL_TEXTO = "R$ 49,99/mês";
+
+// Pagamento por Pix é avulso (o Stripe não renova Pix sozinho): cada Pix pago
+// libera esta quantidade de dias. A Subscription guarda stripePriceId = "pix"
+// e currentPeriodEnd = até quando o acesso vale.
+export const DIAS_POR_PIX = 30;
+export const MARCA_PIX = "pix";
 
 // Dono do sistema: acesso liberado para sempre, sem trial nem cobrança.
 // OWNER_EMAILS (separados por vírgula) na Vercel substitui a lista padrão.
@@ -53,6 +59,10 @@ export async function checkAcesso(userId: string): Promise<AcessoStatus> {
   }
 
   if (sub.status === "active") {
+    // Acesso pago por Pix vale só até currentPeriodEnd.
+    if (sub.stripePriceId === MARCA_PIX && (!sub.currentPeriodEnd || sub.currentPeriodEnd <= agora)) {
+      return { liberado: false, motivo: "pix_vencido", diasRestantesTrial: null };
+    }
     return { liberado: true, motivo: "active", diasRestantesTrial: null };
   }
 

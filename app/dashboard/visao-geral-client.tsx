@@ -29,7 +29,7 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
       </div>
 
       {statusAssinatura?.status === 'trialing' && statusAssinatura.diasRestantesTrial !== null && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Clock size={20} className="text-emerald-400" />
             <div>
@@ -39,14 +39,26 @@ export function VisaoGeralClient({ totalProdutos, valorEstoque, vendasHoje, vend
               <p className="text-sm text-white/60">Assine por R$ 49,99/mês para continuar usando após o trial</p>
             </div>
           </div>
-          <form method="POST" action="/api/stripe/checkout">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 rounded-lg hover:from-emerald-300 hover:to-cyan-400 transition text-sm font-bold"
-            >
-              Assinar agora
-            </button>
-          </form>
+          <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+            <form method="POST" action="/api/stripe/checkout">
+              <input type="hidden" name="metodo" value="cartao" />
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-gradient-to-r from-emerald-400 to-cyan-500 text-gray-900 rounded-lg hover:from-emerald-300 hover:to-cyan-400 transition text-sm font-bold"
+              >
+                💳 Cartão
+              </button>
+            </form>
+            <form method="POST" action="/api/stripe/checkout">
+              <input type="hidden" name="metodo" value="pix" />
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/15 transition text-sm font-bold"
+              >
+                ⚡ Pix
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

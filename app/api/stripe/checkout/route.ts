@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import type Stripe from "stripe";
-import { PRECO_MENSAL_CENTAVOS } from "@/lib/acesso";
+import { PRECO_MENSAL_CENTAVOS, DIAS_POR_PIX } from "@/lib/acesso";
 
 // Cria uma sessão de assinatura no Stripe.
 // O trial de 60 dias é controlado pela nossa própria Subscription
@@ -62,6 +62,41 @@ export async function POST(req: Request) {
         { error: "URL da aplicação inválida. Configure NEXTAUTH_URL com o endereço completo (https://...)" },
         { status: 500 }
       );
+    }
+
+    // O formulário manda metodo=pix para pagar com Pix; o padrão é cartão.
+    let metodo = new URL(req.url).searchParams.get("metodo");
+    if (!metodo) {
+      try {
+        metodo = String((await req.formData()).get("metodo") ?? "");
+      } catch {
+        metodo = "";
+      }
+    }
+
+    // Pix no Stripe não faz cobrança recorrente: cada pagamento é avulso e
+    // libera DIAS_POR_PIX dias de acesso (ver webhook e lib/acesso.ts).
+    if (metodo === "pix") {
+      const pixSession = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer: stripeCustomerId,
+        payment_method_types: ["pix"],
+        line_items: [
+          {
+            price_data: {
+              currency: "brl",
+              unit_amount: PRECO_MENSAL_CENTAVOS,
+              product_data: { name: `Controle Estoque & Vendas - ${DIAS_POR_PIX} dias (Pix)` },
+            },
+            quantity: 1,
+          },
+        ],
+        payment_method_options: { pix: { expires_after_seconds: 60 * 60 } },
+        metadata: { userId, tipo: "pix_mensal" },
+        success_url: `${baseUrl}/dashboard?assinatura=pix`,
+        cancel_url: `${baseUrl}/dashboard?assinatura=cancelada`,
+      });
+      return NextResponse.redirect(pixSession.url!, 303);
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
